@@ -38,6 +38,7 @@
             padding: 10px 20px;
             border-radius: 8px;
             background: #dfe6e9;
+            width: 40%;
         }
         .active-player {
             background: #2ecc71;
@@ -100,6 +101,12 @@
         .button-group {
             margin-top: 15px;
         }
+        .mode-btn {
+            width: 80%;
+            font-size: 1.2rem;
+            margin: 10px 0;
+            padding: 15px;
+        }
     </style>
 </head>
 <body>
@@ -111,8 +118,8 @@
         <div class="rules-box">
             <h3>📜 How to Play</h3>
             <ul>
-                <li><strong>Setup:</strong> Player 1 types something to find outside. <strong>It must be an outdoor item</strong> (like a leaf, rock, or stick) or the game will make you try again!</li>
-                <li><strong>The Hunt:</strong> Player 2 has <strong>10 minutes</strong> to track it down.</li>
+                <li><strong>Setup:</strong> Side A types an outdoor item to find. It must be an outdoor item (like a leaf, rock, or stick) or you have to try again!</li>
+                <li><strong>The Hunt:</strong> Side B has <strong>10 minutes</strong> to track it down.</li>
                 <li><strong>Proof:</strong> Snap and upload a picture of the item.</li>
                 <li><strong>Scoring:</strong> 
                     <ul>
@@ -120,17 +127,23 @@
                         <li>If it's wrong or time runs out: <strong>0 points</strong>.</li>
                     </ul>
                 </li>
-                <li><strong>Switching:</strong> Players swap roles every round.</li>
-                <li><strong>Winning:</strong> First person to reach <strong>100 points</strong> wins!</li>
+                <li><strong>Switching:</strong> Sides swap roles every round.</li>
+                <li><strong>Winning:</strong> First side to reach <strong>100 points</strong> wins!</li>
             </ul>
         </div>
-        <button onclick="dismissRules()" style="background: #2ecc71; font-size: 1.2rem; width: 100%;">Got It! Let's Play</button>
+        <button onclick="dismissRules()" style="background: #2ecc71; font-size: 1.2rem; width: 100%;">Got It! Next</button>
+    </div>
+
+    <div id="modeScreen" class="hidden">
+        <h2>Choose Your Game Mode</h2>
+        <button class="mode-btn" style="background: #34495e;" onclick="selectMode('1v1')">1 vs 1 (Solo Play)</button>
+        <button class="mode-btn" style="background: #8e44ad;" onclick="selectMode('2v2')">2 vs 2 (Team Play)</button>
     </div>
 
     <div id="gameContent" class="hidden">
         <div class="scores">
-            <div id="p1Box" class="player-score active-player">Player 1: <span id="p1Score">0</span></div>
-            <div id="p2Box" class="player-score">Player 2: <span id="p2Score">0</span></div>
+            <div id="p1Box" class="player-score active-player"><span id="p1Label">Player 1</span>: <span id="p1Score">0</span></div>
+            <div id="p2Box" class="player-score"><span id="p2Label">Player 2</span>: <span id="p2Score">0</span></div>
         </div>
 
         <div class="timer" id="timerDisplay">10:00</div>
@@ -172,6 +185,8 @@
     let hunter = 2;  
     let timer;
     let timeLeft = 600; 
+    let gameMode = '1v1'; // Default mode
+    let nameType = 'Player'; // Changes to 'Team' for 2v2
 
     // List of keywords to verify if the item is an outdoor item
     const outdoorKeywords = [
@@ -179,11 +194,27 @@
         'flower', 'plant', 'tree', 'bark', 'dirt', 'soil', 'mud', 'sand', 'pinecone', 'pine cone', 
         'acorn', 'seed', 'bug', 'insect', 'ant', 'worm', 'snail', 'shell', 'feather', 'bird', 
         'cloud', 'sky', 'sun', 'shadow', 'puddle', 'water', 'moss', 'weed', 'clover', 'bush', 
-        'shrub', 'root', 'clover', 'dandelion', 'brick', 'fence', 'gate', 'bench', 'sidewalk'
+        'shrub', 'root', 'dandelion', 'brick', 'fence', 'gate', 'bench', 'sidewalk'
     ];
 
     function dismissRules() {
         document.getElementById('rulesScreen').classList.add('hidden');
+        document.getElementById('modeScreen').classList.remove('hidden');
+    }
+
+    function selectMode(mode) {
+        gameMode = mode;
+        nameType = (mode === '2v2') ? 'Team' : 'Player';
+        
+        // Update labels on scoreboard
+        document.getElementById('p1Label').innerText = `${nameType} 1`;
+        document.getElementById('p2Label').innerText = `${nameType} 2`;
+        
+        // Update initial setup prompt instruction
+        document.getElementById('promptInstruction').innerText = `${nameType} 1: Type something for ${nameType} 2 to find!`;
+
+        // Move to game interface
+        document.getElementById('modeScreen').classList.add('hidden');
         document.getElementById('gameContent').classList.remove('hidden');
     }
 
@@ -196,11 +227,10 @@
             return;
         }
 
-        // Check if the input contains at least one outdoor keyword
         let isOutdoorItem = outdoorKeywords.some(keyword => itemValue.includes(keyword));
 
         if (!isOutdoorItem) {
-            alert("That doesn't sound like something outside! Please write an outdoor item (like a leaf, rock, stick, grass, etc.).");
+            alert(`That doesn't sound like something outside! Please write an outdoor item (like a leaf, rock, stick, grass, etc.).`);
             return;
         }
 
@@ -259,17 +289,17 @@
         document.getElementById(`p${hunter}Score`).innerText = scores[hunter];
 
         if (scores[hunter] >= 100) {
-            endGame(`Player ${hunter} Wins the Game!`);
+            endGame(`${nameType} ${hunter} Wins the Game!`);
             return;
         }
 
-        alert(`Nice! Player ${hunter} gets 10 points.`);
+        alert(`Nice! ${nameType} ${hunter} gets 10 points.`);
         switchTurns();
     }
 
     function itemWrong() {
         clearInterval(timer);
-        alert(`Incorrect item! Player ${hunter} gets 0 points for this round.`);
+        alert(`Incorrect item! ${nameType} ${hunter} gets 0 points for this round.`);
         switchTurns();
     }
 
@@ -281,7 +311,7 @@
         document.getElementById(`p${giver}Box`).classList.add('active-player');
         document.getElementById(`p${hunter}Box`).classList.remove('active-player');
 
-        document.getElementById('promptInstruction').innerText = `Player ${giver}: Type something for Player ${hunter} to find!`;
+        document.getElementById('promptInstruction').innerText = `${nameType} ${giver}: Type something for ${nameType} ${hunter} to find!`;
 
         document.getElementById('photoPreview').style.display = "none";
         document.getElementById('photoUpload').value = "";
@@ -308,9 +338,10 @@
         document.getElementById('p2Score').innerText = "0";
         document.getElementById('p1Box').classList.add('active-player');
         document.getElementById('p2Box').classList.remove('active-player');
-        document.getElementById('promptInstruction').innerText = "Player 1: Type something for Player 2 to find!";
+        
         document.getElementById('winScreen').classList.add('hidden');
-        document.getElementById('setupScreen').classList.remove('hidden');
+        document.getElementById('gameContent').classList.add('hidden');
+        document.getElementById('rulesScreen').classList.remove('hidden');
         document.getElementById('timerDisplay').innerText = "10:00";
     }
 </script>
