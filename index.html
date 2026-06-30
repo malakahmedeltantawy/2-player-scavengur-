@@ -22,13 +22,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         h1 { color: #2c3e50; margin-top: 0; }
-        .status-box {
-            background: #eef2f7;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
         .timer {
             font-size: 2rem;
             color: #e74c3c;
@@ -87,6 +80,9 @@
             cursor: pointer;
             margin: 10px 0;
         }
+        .button-group {
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -118,7 +114,11 @@
         <br>
         <img id="photoPreview" alt="Preview">
         <br>
-        <button id="foundBtn" onclick="itemFound()" style="background: #2ecc71; display: none;">Found It! (+10 pts)</button>
+        
+        <div class="button-group">
+            <button id="foundBtn" onclick="itemFound()" style="background: #2ecc71; display: none;">Correct! (+10 pts)</button>
+            <button id="wrongBtn" onclick="itemWrong()" style="background: #e74c3c; display: none;">Wrong Item (0 pts)</button>
+        </div>
     </div>
 
     <div id="winScreen" class="hidden">
@@ -159,7 +159,7 @@
     function countDown() {
         if (timeLeft <= 0) {
             clearInterval(timer);
-            alert("Time's up! Switching turns.");
+            alert("Time's up! No points awarded. Switching turns.");
             switchTurns();
         } else {
             timeLeft--;
@@ -178,13 +178,15 @@
         const file = document.getElementById('photoUpload').files[0];
         const preview = document.getElementById('photoPreview');
         const foundBtn = document.getElementById('foundBtn');
+        const wrongBtn = document.getElementById('wrongBtn');
         
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 preview.src = e.target.result;
                 preview.style.display = "inline-block";
-                foundBtn.style.display = "inline-block"; // Show the claim points button
+                foundBtn.style.display = "inline-block"; // Show decision buttons
+                wrongBtn.style.display = "inline-block";
             }
             reader.readAsDataURL(file);
         }
@@ -207,6 +209,13 @@
         switchTurns();
     }
 
+    function itemWrong() {
+        clearInterval(timer);
+        // Inform players no points are awarded
+        alert(`Incorrect item! Player ${hunter} gets 0 points for this round.`);
+        switchTurns();
+    }
+
     function switchTurns() {
         // Swap hunter and giver roles
         let temp = giver;
@@ -224,6 +233,7 @@
         document.getElementById('photoPreview').style.display = "none";
         document.getElementById('photoUpload').value = "";
         document.getElementById('foundBtn').style.display = "none";
+        document.getElementById('wrongBtn').style.display = "none";
         document.getElementById('timerDisplay').innerText = "10:00";
 
         // Bring back setup screen
