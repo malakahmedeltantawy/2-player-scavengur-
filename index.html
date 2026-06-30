@@ -43,6 +43,23 @@
             background: #2ecc71;
             color: white;
         }
+        .rules-box {
+            background: #fdfafd;
+            border: 2px dashed #9b59b6;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .rules-box h3 {
+            margin-top: 0;
+            color: #9b59b6;
+            text-align: center;
+        }
+        .rules-box ul {
+            padding-left: 20px;
+            line-height: 1.6;
+        }
         input[type="text"] {
             width: 80%;
             padding: 10px;
@@ -90,49 +107,76 @@
 <div class="container">
     <h1>Scavenger Hunt</h1>
     
-    <div class="scores">
-        <div id="p1Box" class="player-score active-player">Player 1: <span id="p1Score">0</span></div>
-        <div id="p2Box" class="player-score">Player 2: <span id="p2Score">0</span></div>
-    </div>
-
-    <div class="timer" id="timerDisplay">10:00</div>
-
-    <div id="setupScreen">
-        <h2 id="promptInstruction">Player 1: Type something for Player 2 to find!</h2>
-        <input type="text" id="itemPrompt" placeholder="e.g., A pinecone, something red...">
-        <br>
-        <button onclick="startHunt()">Set Target & Start Timer</button>
-    </div>
-
-    <div id="huntScreen" class="hidden">
-        <h2>Target: <span id="targetItem" style="color: #e67e22;"></span></h2>
-        <p>Go find it before time runs out!</p>
-        
-        <label for="photoUpload" class="file-input-label">📸 Take/Upload Picture</label>
-        <input type="file" id="photoUpload" accept="image/*" capture="environment" style="display: none;" onchange="previewPhoto()">
-        
-        <br>
-        <img id="photoPreview" alt="Preview">
-        <br>
-        
-        <div class="button-group">
-            <button id="foundBtn" onclick="itemFound()" style="background: #2ecc71; display: none;">Correct! (+10 pts)</button>
-            <button id="wrongBtn" onclick="itemWrong()" style="background: #e74c3c; display: none;">Wrong Item (0 pts)</button>
+    <div id="rulesScreen">
+        <div class="rules-box">
+            <h3>📜 How to Play</h3>
+            <ul>
+                <li><strong>Setup:</strong> Player 1 types something to find outside.</li>
+                <li><strong>The Hunt:</strong> Player 2 has <strong>10 minutes</strong> to track it down.</li>
+                <li><strong>Proof:</strong> Snap and upload a picture of the item.</li>
+                <li><strong>Scoring:</strong> 
+                    <ul>
+                        <li>If it's correct: <strong>+10 points</strong>!</li>
+                        <li>If it's wrong or time runs out: <strong>0 points</strong>.</li>
+                    </ul>
+                </li>
+                <li><strong>Switching:</strong> Players swap roles every round.</li>
+                <li><strong>Winning:</strong> First person to reach <strong>100 points</strong> wins!</li>
+            </ul>
         </div>
+        <button onclick="dismissRules()" style="background: #2ecc71; font-size: 1.2rem; width: 100%;">Got It! Let's Play</button>
     </div>
 
-    <div id="winScreen" class="hidden">
-        <h2 id="winnerMessage" style="color: #2ecc71;"></h2>
-        <button onclick="resetGame()">Play Again</button>
+    <div id="gameContent" class="hidden">
+        <div class="scores">
+            <div id="p1Box" class="player-score active-player">Player 1: <span id="p1Score">0</span></div>
+            <div id="p2Box" class="player-score">Player 2: <span id="p2Score">0</span></div>
+        </div>
+
+        <div class="timer" id="timerDisplay">10:00</div>
+
+        <div id="setupScreen">
+            <h2 id="promptInstruction">Player 1: Type something for Player 2 to find!</h2>
+            <input type="text" id="itemPrompt" placeholder="e.g., A pinecone, something red...">
+            <br>
+            <button onclick="startHunt()">Set Target & Start Timer</button>
+        </div>
+
+        <div id="huntScreen" class="hidden">
+            <h2>Target: <span id="targetItem" style="color: #e67e22;"></span></h2>
+            <p>Go find it before time runs out!</p>
+            
+            <label for="photoUpload" class="file-input-label">📸 Take/Upload Picture</label>
+            <input type="file" id="photoUpload" accept="image/*" capture="environment" style="display: none;" onchange="previewPhoto()">
+            
+            <br>
+            <img id="photoPreview" alt="Preview">
+            <br>
+            
+            <div class="button-group">
+                <button id="foundBtn" onclick="itemFound()" style="background: #2ecc71; display: none;">Correct! (+10 pts)</button>
+                <button id="wrongBtn" onclick="itemWrong()" style="background: #e74c3c; display: none;">Wrong Item (0 pts)</button>
+            </div>
+        </div>
+
+        <div id="winScreen" class="hidden">
+            <h2 id="winnerMessage" style="color: #2ecc71;"></h2>
+            <button onclick="resetGame()">Play Again</button>
+        </div>
     </div>
 </div>
 
 <script>
     let scores = { 1: 0, 2: 0 };
-    let giver = 1;   // Person choosing the item
-    let hunter = 2;  // Person finding the item
+    let giver = 1;   
+    let hunter = 2;  
     let timer;
-    let timeLeft = 600; // 10 minutes in seconds
+    let timeLeft = 600; 
+
+    function dismissRules() {
+        document.getElementById('rulesScreen').classList.add('hidden');
+        document.getElementById('gameContent').classList.remove('hidden');
+    }
 
     function startHunt() {
         const itemInput = document.getElementById('itemPrompt');
@@ -141,15 +185,12 @@
             return;
         }
 
-        // Set target text
         document.getElementById('targetItem').innerText = itemInput.value;
-        itemInput.value = ""; // Clear input
+        itemInput.value = ""; 
 
-        // Switch screens
         document.getElementById('setupScreen').classList.add('hidden');
         document.getElementById('huntScreen').classList.remove('hidden');
 
-        // Start 10-minute timer
         timeLeft = 600;
         updateTimerDisplay();
         clearInterval(timer);
@@ -185,7 +226,7 @@
             reader.onload = function(e) {
                 preview.src = e.target.result;
                 preview.style.display = "inline-block";
-                foundBtn.style.display = "inline-block"; // Show decision buttons
+                foundBtn.style.display = "inline-block"; 
                 wrongBtn.style.display = "inline-block";
             }
             reader.readAsDataURL(file);
@@ -195,11 +236,9 @@
     function itemFound() {
         clearInterval(timer);
         
-        // Award 10 points to the hunter
         scores[hunter] += 10;
         document.getElementById(`p${hunter}Score`).innerText = scores[hunter];
 
-        // Check win condition
         if (scores[hunter] >= 100) {
             endGame(`Player ${hunter} Wins the Game!`);
             return;
@@ -211,32 +250,26 @@
 
     function itemWrong() {
         clearInterval(timer);
-        // Inform players no points are awarded
         alert(`Incorrect item! Player ${hunter} gets 0 points for this round.`);
         switchTurns();
     }
 
     function switchTurns() {
-        // Swap hunter and giver roles
         let temp = giver;
         giver = hunter;
         hunter = temp;
 
-        // Update CSS highlights on scoreboard
         document.getElementById(`p${giver}Box`).classList.add('active-player');
         document.getElementById(`p${hunter}Box`).classList.remove('active-player');
 
-        // Update text for the setup screen
         document.getElementById('promptInstruction').innerText = `Player ${giver}: Type something for Player ${hunter} to find!`;
 
-        // Reset UI elements
         document.getElementById('photoPreview').style.display = "none";
         document.getElementById('photoUpload').value = "";
         document.getElementById('foundBtn').style.display = "none";
         document.getElementById('wrongBtn').style.display = "none";
         document.getElementById('timerDisplay').innerText = "10:00";
 
-        // Bring back setup screen
         document.getElementById('huntScreen').classList.add('hidden');
         document.getElementById('setupScreen').classList.remove('hidden');
     }
